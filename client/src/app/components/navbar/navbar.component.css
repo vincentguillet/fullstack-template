@@ -16,4 +16,9 @@
 .nav-actions {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
+}
+
+.mat-menu-item mat-icon {
+  margin-right: 8px;
 }
