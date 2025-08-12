@@ -69,7 +69,6 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
-        // Récupère le refresh token depuis le cookie
         String refreshToken = null;
         if (request.getCookies() != null) {
             refreshToken = Arrays.stream(request.getCookies())
@@ -79,12 +78,14 @@ public class AuthController {
                     .orElse(null);
         }
         if (refreshToken == null) {
-            return ResponseEntity.badRequest().build();
+            // Pas de cookie -> pas d'erreur réseau
+            return ResponseEntity.noContent().build();
         }
 
         return authService.refresh(refreshToken)
                 .map(authResponse -> createAuthResponse(authResponse, response))
-                .orElse(ResponseEntity.badRequest().build());
+                // Token inconnu/expiré -> pas d'erreur réseau non plus
+                .orElse(ResponseEntity.noContent().build());
     }
 
     private ResponseEntity<AuthResponse> createAuthResponse(AuthResponse authResponse, HttpServletResponse response) {
