@@ -1,5 +1,5 @@
 import {inject, Injectable, signal} from '@angular/core';
-import {map, Observable, tap} from 'rxjs';
+import {catchError, map, of, switchMap, tap} from 'rxjs';
 import {Credentials} from '../../interfaces/credentials/credentials';
 import {HttpClient} from '@angular/common/http';
 import {User} from '../../models/user/user';
@@ -9,51 +9,65 @@ import {User} from '../../models/user/user';
 })
 export class AuthService {
 
-  private readonly http: HttpClient = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly BASE_URL = 'http://localhost:8080/api/auth';
 
-  user = signal<User | null | undefined>(undefined);
+  user = signal<User | null>(null);
+  accessToken = signal<string | null>(null);
 
-  register(user: User): Observable<any> {
-    return this.http.post(this.BASE_URL + '/register', user).pipe(
-      tap(() => {
+  register(user: User) {
+    return this.http.post(this.BASE_URL + '/register', user, {withCredentials: true});
+  }
 
-      })
+  login(credentials: Credentials) {
+    return this.http.post<any>(this.BASE_URL + '/login', credentials, {withCredentials: true}).pipe(
+      tap(res => this.accessToken.set(res?.accessToken ?? null)),
+      switchMap(() => this.me())
     );
   }
 
-  login(credentials: Credentials): Observable<User | null | undefined> {
-    return this.http.post<User>(this.BASE_URL + '/login', credentials).pipe(
-      tap((result: any) => {
-        localStorage.setItem('token', result.accessToken);
-        const user: User = Object.assign(new User(), result['user']);
-        this.user.set(user);
-      }),
-      map((result: any) => {
-        return this.user();
-      })
-    );
-  }
-
-  logout(): Observable<null> {
-    return this.http.get(this.BASE_URL + '/logout').pipe(
+  logout() {
+    return this.http.get(this.BASE_URL + '/logout', {withCredentials: true}).pipe(
       tap(() => {
-        localStorage.removeItem('token');
+        this.accessToken.set(null);
         this.user.set(null);
       }),
       map(() => null)
     );
   }
 
-  getUsers(): Observable<User | null | undefined> {
-    return this.http.get(this.BASE_URL + '/me').pipe(
-      tap((result: any) => {
-        const user: User = Object.assign(new User(), result);
-        this.user.set(user);
-      }),
-      map((result: any) => {
-        return this.user();
+  // Charge l'utilisateur courant (protégé)
+  me() {
+    return this.http.get<User>(this.BASE_URL + '/me', {withCredentials: true}).pipe(
+      tap(u => this.user.set(u)),
+      map(() => this.user()),
+      catchError(() => {
+        this.user.set(null);
+        return of(null);
       })
+    );
+  }
+
+  // Demande un nouvel access token via le cookie HttpOnly
+  refresh() {
+    return this.http.post<any>(this.BASE_URL + '/refresh', {}, {
+      withCredentials: true,
+      observe: 'response'
+    }).pipe(
+      map(res => {
+        const token = (res.body as any)?.accessToken ?? null;
+        this.accessToken.set(token);
+        return token;
+      }),
+      catchError(() => of(null))
+    );
+  }
+
+  // Au démarrage de l'app, tenter transparence session -> doit TOUJOURS compléter
+  bootstrapSession() {
+    return this.refresh().pipe(
+      switchMap(token => token ? this.me() : of(null)),
+      catchError(() => of(null)) // <- sécurité supplémentaire
     );
   }
 }
