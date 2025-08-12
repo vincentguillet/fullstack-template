@@ -1,11 +1,14 @@
 package me.vguillet.model.security;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import me.vguillet.model.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Date;
 
 @Entity
 @Data
@@ -16,11 +19,15 @@ public class Token {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @NotNull
     private String value;
 
-    @ManyToOne
-    User user;
+    private Date expirationDate;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JsonBackReference
+    private User user;
 }

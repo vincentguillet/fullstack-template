@@ -1,5 +1,9 @@
 package me.vguillet.model.user;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import me.vguillet.model.security.Token;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -21,16 +25,36 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
+    @NotBlank
+    @Column(length = 50, nullable = false)
     private String firstName;
+
+    @NotBlank
+    @Column(length = 50, nullable = false)
     private String lastName;
-    private String email;
+
+    @NotBlank
+    @Column(length = 50, unique = true, nullable = false)
     private String username;
+
+    @Email
+    @NotBlank
+    @Column(length = 100, unique = true, nullable = false)
+    private String email;
+
+    @NotBlank
+    @Column(length = 120, nullable = false)
     private String password;
 
-    @OneToMany(mappedBy = "user")
-    private List<Token> refreshTokens;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
+
+    @OneToOne(mappedBy = "user")
+    @JsonManagedReference
+    private Token token;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

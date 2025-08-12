@@ -26,7 +26,7 @@ public class TokenService {
         }
     }
 
-    public Optional<Token> getTokenById(int id) {
+    public Optional<Token> getTokenById(Long id) {
         return tokenRepository.findById(id);
     }
 
@@ -43,7 +43,7 @@ public class TokenService {
     }
 
     @Transactional
-    public Optional<Token> deleteTokenById(int id) {
+    public Optional<Token> deleteTokenById(Long id) {
         Optional<Token> token = tokenRepository.findById(id);
         token.ifPresent(tokenRepository::delete);
         return token;

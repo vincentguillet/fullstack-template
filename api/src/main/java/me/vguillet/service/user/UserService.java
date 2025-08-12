@@ -26,7 +26,7 @@ public class UserService {
         }
     }
 
-    public Optional<User> getUserById(int id) {
+    public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
 
@@ -47,7 +47,7 @@ public class UserService {
     }
 
     @Transactional
-    public Optional<User> deleteUserById(int id) {
+    public Optional<User> deleteUserById(Long id) {
         Optional<User> user = userRepository.findById(id);
         user.ifPresent(userRepository::delete);
         return user;
