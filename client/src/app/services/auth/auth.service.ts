@@ -17,7 +17,7 @@ export class AuthService {
   register(user: User): Observable<any> {
     return this.http.post(this.BASE_URL + '/register', user).pipe(
       tap(() => {
-        // Optionally handle post-registration logic here
+
       })
     );
   }
@@ -25,7 +25,7 @@ export class AuthService {
   login(credentials: Credentials): Observable<User | null | undefined> {
     return this.http.post<User>(this.BASE_URL + '/login', credentials).pipe(
       tap((result: any) => {
-        localStorage.setItem('token', result.token);
+        localStorage.setItem('token', result.accessToken);
         const user: User = Object.assign(new User(), result['user']);
         this.user.set(user);
       }),
