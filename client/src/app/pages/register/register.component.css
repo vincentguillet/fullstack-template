@@ -1,0 +1,29 @@
+.auth-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 520px;
+}
+
+.form-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.actions {
+  display: flex;
+  margin-top: 8px;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.ml-8 { margin-left: 8px; }

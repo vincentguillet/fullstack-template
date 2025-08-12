@@ -1,0 +1,119 @@
+<section class="auth-wrap">
+  <mat-card class="auth-card">
+    <mat-card-header>
+      <mat-card-title>Registration</mat-card-title>
+      <mat-card-subtitle>Create a new account</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="registerForm" (ngSubmit)="onRegister()" class="form-grid">
+
+        <!-- First Name -->
+        <mat-form-field appearance="outline">
+          <mat-label>First Name</mat-label>
+          <input matInput
+                 id="firstName"
+                 name="firstName"
+                 formControlName="firstName"
+                 type="text"
+                 autocomplete="given-name"
+                 required>
+          @if (isFieldInvalid('firstName')) {
+            <mat-error>{{ getFieldError('firstName') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Last Name -->
+        <mat-form-field appearance="outline">
+          <mat-label>Last Name</mat-label>
+          <input matInput
+                 id="lastName"
+                 name="lastName"
+                 formControlName="lastName"
+                 type="text"
+                 autocomplete="family-name"
+                 required>
+          @if (isFieldInvalid('lastName')) {
+            <mat-error>{{ getFieldError('lastName') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Username -->
+        <mat-form-field appearance="outline">
+          <mat-label>Username</mat-label>
+          <input matInput
+                 id="username"
+                 name="username"
+                 formControlName="username"
+                 type="text"
+                 autocomplete="username"
+                 required>
+          @if (isFieldInvalid('username')) {
+            <mat-error>{{ getFieldError('username') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Email -->
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput
+                 id="email"
+                 name="email"
+                 formControlName="email"
+                 type="email"
+                 autocomplete="email"
+                 required>
+          @if (isFieldInvalid('email')) {
+            <mat-error>{{ getFieldError('email') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Password -->
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input matInput
+                 id="password"
+                 name="password"
+                 formControlName="password"
+                 type="password"
+                 autocomplete="new-password"
+                 required>
+          @if (isFieldInvalid('password')) {
+            <mat-error>{{ getFieldError('password') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Terms and Conditions -->
+        <mat-checkbox formControlName="termsAndConditions" id="iAgree">
+          I agree to the <a href="#" target="_blank" rel="noopener">terms and conditions</a>
+        </mat-checkbox>
+        @if (isFieldInvalid('termsAndConditions')) {
+          <div class="mat-caption mat-error">{{ getFieldError('termsAndConditions') }}</div>
+        }
+
+        <!-- Submit Button -->
+        <div class="actions">
+          <button mat-raised-button color="primary"
+                  type="submit"
+                  [disabled]="isLoading || registerForm.invalid">
+            @if (isLoading) {
+              <mat-progress-spinner diameter="16" mode="indeterminate"></mat-progress-spinner>
+              <span class="ml-8">Signing up…</span>
+            } @else {
+              Sign up
+            }
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+
+    <mat-divider></mat-divider>
+
+    <mat-card-actions align="end">
+      <span class="mat-body-small">
+        Already have an account?
+        <a [routerLink]="'/login'">Sign in</a>
+      </span>
+    </mat-card-actions>
+  </mat-card>
+</section>

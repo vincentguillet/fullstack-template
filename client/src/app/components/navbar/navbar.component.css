@@ -1,0 +1,19 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.brand {
+  font-weight: bold;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 0.5rem;
+}
