@@ -1,5 +1,13 @@
-import {Component, inject} from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {Component, inject, OnDestroy} from '@angular/core';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators
+} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {MatError, MatFormField, MatLabel} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
@@ -16,6 +24,7 @@ import {MatDivider} from '@angular/material/divider';
 import {AuthService} from '../../services/auth/auth.service';
 import {MatCheckbox} from '@angular/material/checkbox';
 import {MatButton} from '@angular/material/button';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-register',
@@ -41,7 +50,7 @@ import {MatButton} from '@angular/material/button';
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnDestroy {
 
   registerForm: FormGroup;
   isSubmitted = false;
@@ -49,6 +58,8 @@ export class RegisterComponent {
 
   private readonly router: Router = inject(Router);
   private readonly authService: AuthService = inject(AuthService);
+
+  private registerSubscription: Subscription | null = null;
 
   constructor(private readonly formBuilder: FormBuilder) {
     this.registerForm = this.formBuilder.group({
@@ -82,9 +93,25 @@ export class RegisterComponent {
         Validators.maxLength(20),
         Validators.pattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$')
       ]],
+      confirmPassword: ['', [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.maxLength(20),
+        Validators.pattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$')
+      ]],
       termsAndConditions: [false, Validators.requiredTrue]
-    });
+    }, {validators: this.passwordMatchValidator});
   }
+
+  ngOnDestroy(): void {
+    this.registerSubscription?.unsubscribe();
+  }
+
+  private readonly passwordMatchValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
+    const password = group.get('password')?.value;
+    const confirmPassword = group.get('confirmPassword')?.value;
+    return password === confirmPassword ? null : {passwordMismatch: true};
+  };
 
   onRegister() {
 
@@ -93,7 +120,8 @@ export class RegisterComponent {
     if (this.registerForm.valid) {
       this.isLoading = true;
       const registrationData = this.registerForm.value;
-      this.authService.register(registrationData).subscribe({
+      delete registrationData.confirmPassword;
+      this.registerSubscription = this.authService.register(registrationData).subscribe({
         next: (response) => {
           this.isLoading = false;
           this.registerForm.reset();

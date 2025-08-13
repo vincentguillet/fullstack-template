@@ -83,6 +83,24 @@
           }
         </mat-form-field>
 
+        <!-- Password confirmation -->
+        <mat-form-field appearance="outline">
+          <mat-label>Confirm Password</mat-label>
+          <input matInput
+                 id="confirmPassword"
+                 name="confirmPassword"
+                 formControlName="confirmPassword"
+                 type="password"
+                 autocomplete="new-password"
+                 required>
+          @if (isFieldInvalid('confirmPassword')) {
+            <mat-error>{{ getFieldError('confirmPassword') }}</mat-error>
+          }
+        </mat-form-field>
+        @if (registerForm.hasError('passwordMismatch') && (registerForm.dirty || registerForm.touched || isSubmitted)) {
+          <mat-error>Les mots de passe ne correspondent pas</mat-error>
+        }
+
         <!-- Terms and Conditions -->
         <mat-checkbox formControlName="termsAndConditions" id="iAgree">
           I agree to the <a href="#" target="_blank" rel="noopener">terms and conditions</a>

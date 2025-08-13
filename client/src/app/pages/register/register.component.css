@@ -13,11 +13,12 @@
 .form-grid {
   display: grid;
   gap: 16px;
+  margin-top: 16px;
 }
 
 .actions {
   display: flex;
-  margin-top: 8px;
+  margin: 8px;
 
   button {
     display: inline-flex;
@@ -26,4 +27,6 @@
   }
 }
 
-.ml-8 { margin-left: 8px; }
+.ml-8 {
+  margin-left: 8px;
+}
