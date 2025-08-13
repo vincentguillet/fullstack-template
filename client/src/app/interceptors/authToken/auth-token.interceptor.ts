@@ -7,8 +7,8 @@ let isRefreshing = false;
 
 export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {
 
-  const auth = inject(AuthService);
-  const token = auth.accessToken();
+  const authService: AuthService = inject(AuthService);
+  const token = authService.getAccessToken();
 
   // Ajout de l’Authorization si on a un access token en mémoire
   const authReq = token
