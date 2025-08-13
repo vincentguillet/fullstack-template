@@ -1,7 +1,7 @@
 import {Component, inject} from '@angular/core';
 import {MatToolbar} from '@angular/material/toolbar';
 import {MatButton} from '@angular/material/button';
-import {RouterLink} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {AuthService} from '../../services/auth/auth.service';
 import {MatMenu, MatMenuItem, MatMenuTrigger} from '@angular/material/menu';
 import {MatIcon} from '@angular/material/icon';
@@ -24,4 +24,24 @@ import {MatIcon} from '@angular/material/icon';
 export class NavbarComponent {
 
   protected readonly authService = inject(AuthService);
+  private readonly router: Router = inject(Router);
+
+  login() {
+    this.router.navigate(['/login'], {queryParams: {redirect: '/profile'}}).then();
+  }
+
+  logout() {
+    this.authService.logout().subscribe({
+      next: () => {
+        this.login();
+      },
+      error: (err) => {
+        console.error('Logout failed:', err);
+      }
+    });
+  }
+
+  getUser() {
+    return this.authService.user();
+  }
 }

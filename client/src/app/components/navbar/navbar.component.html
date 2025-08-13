@@ -2,14 +2,19 @@
   <div class="container">
     <div class="brand" [routerLink]="'/'">Demo</div>
     <div class="nav-actions">
-      <button mat-button [routerLink]="'/'">Accueil</button>
-      @if (authService.user(); as user) {
+      @if (getUser(); as user) {
         <button mat-button [matMenuTriggerFor]="userMenu">
           <mat-icon>account_circle</mat-icon>
-          Welcome, {{ user.username }}
+         Logged in as {{ user.username }}
           <mat-icon>expand_more</mat-icon>
         </button>
         <mat-menu #userMenu="matMenu">
+          @if (authService.hasRole('Administrator')) {
+            <button mat-menu-item [routerLink]="'/admin'">
+            <mat-icon>admin_panel_settings</mat-icon>
+              Admin
+            </button>
+          }
           <button mat-menu-item [routerLink]="'/profile'">
             <mat-icon>person</mat-icon>
             Profile
