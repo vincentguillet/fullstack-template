@@ -2,7 +2,7 @@ import {inject, Injectable, signal} from '@angular/core';
 import {catchError, map, of, switchMap, tap} from 'rxjs';
 import {Credentials} from '../../interfaces/credentials/credentials';
 import {HttpClient} from '@angular/common/http';
-import {User} from '../../models/user/user';
+import {User} from '../../models/user/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +12,8 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly BASE_URL = 'http://localhost:8080/api/auth';
 
-  user = signal<User | null>(null);
-  accessToken = signal<string | null>(null);
+  readonly user = signal<User | null>(null);
+  private readonly accessToken = signal<string | null>(null);
 
   register(user: User) {
     return this.http.post(this.BASE_URL + '/register', user, {withCredentials: true});
@@ -69,5 +69,20 @@ export class AuthService {
       switchMap(token => token ? this.me() : of(null)),
       catchError(() => of(null)) // <- sécurité supplémentaire
     );
+  }
+
+  isLoggedIn(): boolean {
+    return this.user() !== null;
+  }
+
+  hasRole(role: string): boolean {
+    const user: User | null = this.user();
+    if (!user) return false;
+    const roles = Array.isArray((user as any).roles) ? (user as any).roles : [(user as any).role];
+    return roles?.includes(role) ?? false;
+  }
+
+  getAccessToken(): string | null {
+    return this.accessToken();
   }
 }
