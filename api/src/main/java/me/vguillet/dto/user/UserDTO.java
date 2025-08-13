@@ -12,5 +12,6 @@ public class UserDTO {
     private String lastName;
     private String username;
     private String email;
-    private String password;
+    private String password; // Note: In a real application, avoid sending passwords in DTOs
+    private String role;
 }
