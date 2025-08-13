@@ -1,9 +1,13 @@
 <div class="home-container">
-  <h1>Fullstack demo template</h1>
-  <p>Create an account or sign in to get started.</p>
-
-  <div class="home-actions">
-    <button mat-flat-button routerLink="/login">Login</button>
-    <button mat-raised-button routerLink="/register">Sign Up</button>
-  </div>
+  @if (getUser(); as user) {
+    <h1>Welcome, {{ user.firstName }}!</h1>
+    <p>What would you like to do today?</p>
+  } @else {
+    <h1>Welcome to the demo</h1>
+    <p>Create an account or sign in to get started.</p>
+    <div class="home-actions">
+      <button mat-flat-button [routerLink]="'/login'">Login</button>
+      <button mat-raised-button [routerLink]="'/register'">Sign Up</button>
+    </div>
+  }
 </div>

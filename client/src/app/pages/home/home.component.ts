@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {MatButton} from '@angular/material/button';
+import {AuthService} from '../../services/auth/auth.service';
 import {RouterLink} from '@angular/router';
 
 @Component({
@@ -14,4 +15,9 @@ import {RouterLink} from '@angular/router';
 })
 export class HomeComponent {
 
+  protected readonly authService: AuthService = inject(AuthService);
+
+  getUser() {
+    return this.authService.user();
+  }
 }
