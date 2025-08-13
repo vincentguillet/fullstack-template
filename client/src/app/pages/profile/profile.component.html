@@ -1,0 +1,27 @@
+@if (getUser(); as user) {
+  <mat-card class="profile-card">
+    <mat-card-header>
+      <div mat-card-avatar class="profile-avatar">
+        <mat-icon>account_circle</mat-icon>
+      </div>
+      <mat-card-title>{{ user.firstName }} {{ user.lastName }}</mat-card-title>
+      <mat-card-subtitle>{{ user.username }} ({{ user.role }})</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <p>
+        <mat-icon>email</mat-icon>
+        {{ user.email }}
+      </p>
+    </mat-card-content>
+    <mat-card-actions class="profile-actions">
+      <button mat-raised-button color="primary">
+        <mat-icon>edit</mat-icon>
+        Edit profile
+      </button>
+      <button mat-raised-button color="warn" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Logout
+      </button>
+    </mat-card-actions>
+  </mat-card>
+}
