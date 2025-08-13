@@ -1,6 +1,7 @@
 package me.vguillet.mapper.user;
 
 import me.vguillet.dto.user.UserDTO;
+import me.vguillet.model.user.Role;
 import me.vguillet.model.user.User;
 
 public class UserMapper {
@@ -12,6 +13,7 @@ public class UserMapper {
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
         user.setPassword(userDTO.getPassword());
+        user.setRole(Role.valueOf(userDTO.getRole()));
         return user;
     }
 
@@ -21,7 +23,7 @@ public class UserMapper {
         userDTO.setLastName(user.getLastName());
         userDTO.setUsername(user.getUsername());
         userDTO.setEmail(user.getEmail());
-        userDTO.setPassword(user.getPassword());
+        userDTO.setRole(user.getRole() != null ? user.getRole().getDisplayName() : null);
         return userDTO;
     }
 }
