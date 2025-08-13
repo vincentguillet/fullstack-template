@@ -1,11 +1,11 @@
-import {Component, inject} from '@angular/core';
+import {Component, inject, OnDestroy} from '@angular/core';
 import {MatError, MatFormField, MatLabel} from '@angular/material/form-field';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {AuthService} from '../../services/auth/auth.service';
 import {Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 import {Credentials} from '../../interfaces/credentials/credentials';
-import {User} from '../../models/user/user';
+import {User} from '../../models/user/user.model';
 import {MatInput} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';
 
@@ -23,10 +23,10 @@ import {MatButton} from '@angular/material/button';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnDestroy {
 
   private readonly formBuilder: FormBuilder = inject(FormBuilder);
-  private readonly loginService: AuthService = inject(AuthService);
+  private readonly authService: AuthService = inject(AuthService);
   private readonly router: Router = inject(Router);
 
   private loginSubscription: Subscription | null = null;
@@ -47,7 +47,7 @@ export class LoginComponent {
   }
 
   login() {
-    this.loginSubscription = this.loginService.login(
+    this.loginSubscription = this.authService.login(
       this.loginFormGroup.value as Credentials).subscribe({
       next: (result: User | null | undefined) => {
         this.navigateHome();
