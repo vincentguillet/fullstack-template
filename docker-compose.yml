@@ -1,0 +1,66 @@
+services:
+  jenkins:
+    build: .
+    user: root
+    container_name: fullstack-template-jenkins
+    networks:
+      - jenkins-network
+    ports:
+      - "8888:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./jenkins_home:/var/jenkins_home
+
+  spring:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: fullstack-template-spring
+    depends_on:
+      - mysql
+    networks:
+      - fullstack-template-network
+    ports:
+      - "3000:8080"
+    environment:
+      - SPRING_IMAGE_NAME=fullstack-template-api
+      - IMAGE_TAG=latest
+
+  angular:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    networks:
+      - fullstack-template-network
+    container_name: fullstack-template-angular
+    ports:
+      - "4200:4200"
+    environment:
+      - ANGULAR_IMAGE_NAME=fullstack-template-client
+      - IMAGE_TAG=latest
+
+  mysql:
+    image: mysql:8.4.6
+    container_name: fullstack-template-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: fullstack_template
+      MYSQL_USER: dev
+      MYSQL_PASSWORD: P@ssw0rd
+    ports:
+      - "3366:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - fullstack-template-network
+
+networks:
+  fullstack-template-network:
+    external: true
+
+  jenkins-network:
+    external: true
+
+volumes:
+  mysql-data:
