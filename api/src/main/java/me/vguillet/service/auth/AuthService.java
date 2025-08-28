@@ -32,7 +32,7 @@ public class AuthService {
 
     private final int REFRESH_TOKEN_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 7; // 7 jours
 
-    public Optional<?> register(User user) {
+    public Optional<AuthResponse> register(User user) {
         String username = user.getUsername();
 
         if (userRepository.findByUsername(username).isPresent()) {
