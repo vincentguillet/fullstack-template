@@ -13,7 +13,7 @@ public class UserMapper {
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
         user.setPassword(userDTO.getPassword());
-        user.setRole(Role.valueOf(userDTO.getRole()));
+        user.setRole(Role.valueOf(userDTO.getRole() != null ? userDTO.getRole() : "USER"));
         return user;
     }
 
