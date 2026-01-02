@@ -2,13 +2,12 @@ pipeline {
     agent none
 
     environment {
-        REGISTRY           = 'registry.vincent-guillet.fr'
+        REGISTRY        = 'registry.vincent-guillet.fr'
 
-        // Images "main-latest" (une seule branche)
-        BACKEND_IMAGE      = "${REGISTRY}/fullstack-template-api:main-latest"
-        FRONTEND_IMAGE     = "${REGISTRY}/fullstack-template-client:main-latest"
+        BACKEND_IMAGE   = "${REGISTRY}/fullstack-template-backend:main-latest"
+        FRONTEND_IMAGE  = "${REGISTRY}/fullstack-template-frontend:main-latest"
 
-        COMPOSE_PROJECT    = 'fullstack-template'
+        COMPOSE_PROJECT = 'fullstack-template'
     }
 
     stages {
@@ -19,55 +18,56 @@ pipeline {
             steps {
                 checkout scm
 
-                // ----- Build BACKEND -----
-                dir('api') {
+                dir('backend') {
                     sh """
                         set -e
-                        echo "=== Build image BACKEND ${BACKEND_IMAGE} ==="
+                        echo "=== Build BACKEND ==="
                         docker build -t ${BACKEND_IMAGE} .
                     """
                 }
 
-                // ----- Build FRONTEND -----
-                dir('client') {
+                dir('frontend') {
                     sh """
                         set -e
-                        echo "=== Build image FRONTEND ${FRONTEND_IMAGE} ==="
+                        echo "=== Build FRONTEND ==="
                         docker build -t ${FRONTEND_IMAGE} .
                     """
                 }
 
-                // ----- Push vers registry -----
                 sh """
                     set -e
-                    echo "=== Push images vers ${REGISTRY} ==="
+                    echo "=== Push images ==="
                     docker push ${BACKEND_IMAGE}
                     docker push ${FRONTEND_IMAGE}
                 """
             }
         }
 
-        stage('Deploy PROD (main)') {
-            agent { label 'ct-home-projets' }
+        stage('Deploy') {
+            agent { label 'ct-home-dev' }
 
             steps {
                 checkout scm
 
                 withEnv([
                     "DOCKER_HOST=unix:///var/run/docker.sock",
-                    "COMPOSE_PROJECT_NAME=${env.COMPOSE_PROJECT}"
+                    "COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT}",
+
+                    // Variables injectées directement (exemples)
+                    "BACKEND_IMAGE=${BACKEND_IMAGE}",
+                    "FRONTEND_IMAGE=${FRONTEND_IMAGE}"
                 ]) {
                     sh """
                         set -e
 
-                        echo "=== [PROD] docker compose down ==="
-                        docker compose -f docker-compose.prod.yml down || true
+                        echo "=== docker compose down ==="
+                        docker compose -f docker-compose.yml down || true
 
-                        echo "=== [PROD] docker compose pull ==="
-                        docker compose -f docker-compose.prod.yml pull
+                        echo "=== docker compose pull ==="
+                        docker compose -f docker-compose.yml pull
 
-                        echo "=== [PROD] docker compose up (force recreate) ==="
-                        docker compose -f docker-compose.prod.yml up -d --force-recreate
+                        echo "=== docker compose up ==="
+                        docker compose -f docker-compose.yml up -d --force-recreate
                     """
                 }
             }
