@@ -1,84 +1,75 @@
 pipeline {
-    agent any
-    
-    tools {
-        maven 'mvn'
-        nodejs 'npm'
-    }
-    
+    agent none
+
     environment {
-        JAVA_HOME = '/opt/java/openjdk'
-        PATH = "${JAVA_HOME}/bin:${env.PATH}"
-        SPRING_IMAGE_NAME = 'spring-jenkins'
-        ANGULAR_IMAGE_NAME = 'angular-jenkins'
-        IMAGE_TAG = 'latest'
+        REGISTRY           = 'registry.vincent-guillet.fr'
+
+        // Images "main-latest" (une seule branche)
+        BACKEND_IMAGE      = "${REGISTRY}/fullstack-template-api:main-latest"
+        FRONTEND_IMAGE     = "${REGISTRY}/fullstack-template-client:main-latest"
+
+        COMPOSE_PROJECT    = 'fullstack-template'
     }
-    
+
     stages {
-        stage('Checkout sur la branche main') {
-            steps {
-                git branch: 'main', url: 'https://github.com/vincentguillet/fullstack-template.git' 
-            }
-        }
 
-        stage('Maven Build') {
+        stage('Build & Push Docker Images') {
+            agent { label 'ct-home-dev' }
+
             steps {
+                checkout scm
+
+                // ----- Build BACKEND -----
                 dir('api') {
-                    sh 'mvn compile'
+                    sh """
+                        set -e
+                        echo "=== Build image BACKEND ${BACKEND_IMAGE} ==="
+                        docker build -t ${BACKEND_IMAGE} .
+                    """
                 }
-            }
-        }
 
-        stage('Angular Build') {
-            steps {
+                // ----- Build FRONTEND -----
                 dir('client') {
-                    sh 'npm install'
-                    sh 'npm run build'
+                    sh """
+                        set -e
+                        echo "=== Build image FRONTEND ${FRONTEND_IMAGE} ==="
+                        docker build -t ${FRONTEND_IMAGE} .
+                    """
                 }
-            }
-        }
 
-        stage('Maven Test') {
-            steps {
-                dir('api') {
-                    sh 'mvn test'
-                }
-            }
-        }
-
-        stage('Spring Docker Build') {
-            steps {
-                dir('api') {
-                    sh 'docker-compose build spring'
-                }
-            }
-        }
-
-        stage('Angular Docker Build') {
-            steps {
-                dir('client') {
-                    sh 'docker-compose build angular'
-                }
-            }
-        }
-
-        stage('Spring Deployment') {
-            steps {
+                // ----- Push vers registry -----
                 sh """
-                docker-compose stop spring
-                docker-compose rm spring
-                docker-compose up -d --no-recreate spring
+                    set -e
+                    echo "=== Push images vers ${REGISTRY} ==="
+                    docker push ${BACKEND_IMAGE}
+                    docker push ${FRONTEND_IMAGE}
                 """
             }
         }
 
-        stage('Angular Deployment') {
+        stage('Deploy PROD (main)') {
+            agent { label 'ct-home-projets' }
+
             steps {
-                sh """
-                docker-compose stop angular
-                docker-compose rm angular
-                docker-compose up -d --no-recreate angular
-                """
+                checkout scm
+
+                withEnv([
+                    "DOCKER_HOST=unix:///var/run/docker.sock",
+                    "COMPOSE_PROJECT_NAME=${env.COMPOSE_PROJECT}"
+                ]) {
+                    sh """
+                        set -e
+
+                        echo "=== [PROD] docker compose down ==="
+                        docker compose -f docker-compose.prod.yml down || true
+
+                        echo "=== [PROD] docker compose pull ==="
+                        docker compose -f docker-compose.prod.yml pull
+
+                        echo "=== [PROD] docker compose up (force recreate) ==="
+                        docker compose -f docker-compose.prod.yml up -d --force-recreate
+                    """
+                }
             }
         }
     }
