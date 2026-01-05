@@ -8,11 +8,22 @@ services:
       - mysql
     networks:
       - fullstack-template
+      - traefik
     ports:
       - "3000:8080"
     environment:
       - SPRING_IMAGE_NAME=fullstack-template-api
       - IMAGE_TAG=latest
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+      
+      - traefik.http.routers.fullstack-template-api.rule=Host(`dev.vincent-guillet.fr`) && PathPrefix(`/fullstack-template-api`)
+      - traefik.http.routers.fullstack-template-api.entrypoints=edge
+      - traefik.http.routers.fullstack-template-api.service=fullstack-template-api
+      - traefik.http.services.fullstack-template-api.loadbalancer.server.port=3000
+      - traefik.http.routers.fullstack-template-api.middlewares=fullstack-template-api-stripprefix
+      - traefik.http.middlewares.fullstack-template-api-stripprefix.stripprefix.prefixes=/fullstack-template-api
 
   angular:
     build:
@@ -20,12 +31,34 @@ services:
       dockerfile: Dockerfile
     networks:
       - fullstack-template
+      - traefik
     container_name: fullstack-template-angular
     ports:
       - "4200:4200"
     environment:
       - ANGULAR_IMAGE_NAME=fullstack-template-client
       - IMAGE_TAG=latest
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+
+      - traefik.http.routers.fullstack-template-client.rule=Host(`dev.vincent-guillet.fr`) && (Path(`/fullstack-template`) || PathPrefix(`/fullstack-template/`))
+      - traefik.http.routers.fullstack-template-client.entrypoints=edge
+      - traefik.http.routers.fullstack-template-client.service=fullstack-template-client
+      - traefik.http.routers.fullstack-template-client.middlewares=fullstack-template-slash,fullstack-template-client-stripprefix
+
+      - traefik.http.middlewares.fullstack-template-slash.redirectregex.regex=^https?://([^/]+)/fullstack-template$$
+      - traefik.http.middlewares.fullstack-template-slash.redirectregex.replacement=https://$${1}/fullstack-template/
+      - traefik.http.middlewares.fullstack-template-slash.redirectregex.permanent=true
+
+      - traefik.http.middlewares.fullstack-template-client-stripprefix.stripprefix.prefixes=/fullstack-template
+
+      - traefik.http.services.fullstack-template-client.loadbalancer.server.port=4200
+
+      - traefik.http.routers.fullstack-template-ps.rule=Host(`dev.vincent-guillet.fr`) && PathPrefix(`/fullstack-template`)
+      - traefik.http.routers.fullstack-template-ps.entrypoints=edge
+      - traefik.http.routers.fullstack-template-ps.service=fullstack-template-client
+      - traefik.http.routers.fullstack-template-ps.middlewares=fullstack-template-client-stripprefix
 
   mysql:
     image: mysql:8.4.6
@@ -45,6 +78,8 @@ services:
 
 networks:
   fullstack-template:
+    external: true
+  traefik:
     external: true
 
 volumes:
