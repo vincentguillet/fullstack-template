@@ -4,8 +4,8 @@ pipeline {
     environment {
         REGISTRY        = 'registry.vincent-guillet.fr'
 
-        BACKEND_IMAGE   = "${REGISTRY}/fullstack-template-backend:main-latest"
-        FRONTEND_IMAGE  = "${REGISTRY}/fullstack-template-frontend:main-latest"
+        BACKEND_IMAGE   = "${REGISTRY}/fullstack-template-api:main-latest"
+        FRONTEND_IMAGE  = "${REGISTRY}/fullstack-template-client:main-latest"
 
         COMPOSE_PROJECT = 'fullstack-template'
     }
@@ -18,7 +18,7 @@ pipeline {
             steps {
                 checkout scm
 
-                dir('backend') {
+                dir('api') {
                     sh """
                         set -e
                         echo "=== Build BACKEND ==="
@@ -26,7 +26,7 @@ pipeline {
                     """
                 }
 
-                dir('frontend') {
+                dir('client') {
                     sh """
                         set -e
                         echo "=== Build FRONTEND ==="
