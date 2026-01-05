@@ -1,16 +1,4 @@
 services:
-  jenkins:
-    build: .
-    user: root
-    container_name: fullstack-template-jenkins
-    networks:
-      - jenkins-network
-    ports:
-      - "8888:8080"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./jenkins_home:/var/jenkins_home
-
   spring:
     build:
       context: ./api
@@ -53,13 +41,10 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
-      - fullstack-template-network
+      - fullstack-template
 
 networks:
-  fullstack-template-network:
-    external: true
-
-  jenkins-network:
+  fullstack-template:
     external: true
 
 volumes:
